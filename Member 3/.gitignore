@@ -1,9 +1,11 @@
-# Virtual environment
 .venv/
-
-# Environment variables
 .env
 
-# Python cache
 __pycache__/
 *.pyc
+
+vector_db/
+!vector_db/.gitkee
+
+desktop.ini
+**/desktop.ini
