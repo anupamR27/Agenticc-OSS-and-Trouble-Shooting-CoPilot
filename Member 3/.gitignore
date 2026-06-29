@@ -5,7 +5,7 @@ __pycache__/
 *.pyc
 
 vector_db/
-!vector_db/.gitkee
+!vector_db/.gitkeep
 
 desktop.ini
 **/desktop.ini
