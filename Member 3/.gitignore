@@ -9,3 +9,5 @@ vector_db/
 
 desktop.ini
 **/desktop.ini
+
+test_retriever.py
