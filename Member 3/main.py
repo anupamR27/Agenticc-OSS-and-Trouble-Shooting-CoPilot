@@ -4,7 +4,10 @@ from parser.data_adapter import convert_rca_row
 from agents.recommendation_agent import get_recommendations
 from agents.llm_agent import generate_report
 
-df = pd.read_csv("input/rca_results.csv")
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+df = pd.read_csv(BASE_DIR / "input" / "rca_results.csv")
 
 print("\nAvailable Incidents (Non-Normal):\n")
 

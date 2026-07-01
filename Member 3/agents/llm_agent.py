@@ -3,7 +3,8 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 
-# Load environment variables from .env
+from rag.retriever import retrieve_context
+
 load_dotenv()
 
 client = Groq(
@@ -17,7 +18,7 @@ def generate_report(rca_result: dict, recommendations: list[str]) -> str:
 
     Args:
         rca_result: RCA output dictionary.
-        recommendations: Retrieved operator recommendations.
+        recommendations: Rule-based operator recommendations.
 
     Returns:
         Formatted incident report.
@@ -25,12 +26,37 @@ def generate_report(rca_result: dict, recommendations: list[str]) -> str:
 
     actions = "\n".join(f"- {action}" for action in recommendations)
 
+    retrieval_query = f"""
+    Root Cause: {rca_result["root_cause"]}
+    Severity: {rca_result["severity"]}
+    Affected KPIs: {rca_result["affected_kpis"]}
+    RCA Explanation: {rca_result["explanation"]}
+    """.strip()
+    try:
+        retrieved_chunks = retrieve_context(retrieval_query)
+
+        supporting_documentation = (
+            "\n\n--------------------------------\n\n".join(
+                (
+                    f"Source: {chunk['source_pdf']}\n"
+                    f"Page: {chunk['page_number'] or 'Unknown'}\n\n"
+                    f"{chunk['text']}"
+                )
+                for chunk in retrieved_chunks
+            )
+            or "No relevant supporting documentation was retrieved."
+        )
+    except Exception as e:
+        print(f"Warning: RAG retrieval failed: {e}")
+        supporting_documentation = "Supporting telecom documentation could not be retrieved."
+        
     prompt = f"""
+    
 You are a Senior Telecom Network Operations Engineer.
 
 Generate a concise operator incident report.
 
-Incident Details
+INCIDENT DETAILS
 ----------------
 Cell ID: {rca_result["cell_id"]}
 Severity: {rca_result["severity"]}
@@ -43,15 +69,28 @@ Affected KPIs:
 RCA Explanation:
 {rca_result["explanation"]}
 
-Retrieved Operator Actions:
+RULE-BASED OPERATOR RECOMMENDATIONS
+-----------------------------------
 {actions}
 
-Rules:
-- Use ONLY the supplied operator actions.
-- Do NOT invent troubleshooting steps.
+SUPPORTING TELECOM DOCUMENTATION
+--------------------------------
+{supporting_documentation}
+
+INSTRUCTIONS
+------------
+- Treat the RCA output as the identified incident.
+- Use the supporting telecom documentation as technical reference material.
+- Use the rule-based recommendations as immediate operator guidance.
+- Do not invent troubleshooting procedures that are unsupported by the
+  supporting documentation. The supplied rule-based recommendations remain
+  valid immediate actions even when the documentation does not repeat them.
+- Mention the source PDF and page number when referencing retrieved
+  documentation where appropriate.
 - Keep the report under 200 words.
 - Use professional telecom terminology.
 - Do not repeat information.
+- Produce a concise, professional telecom incident report.
 
 Output Format:
 
@@ -70,7 +109,7 @@ Output Format:
             {
                 "role": "system",
                 "content": (
-                    "You are an Ericsson telecom operations engineer who writes "
+                    "You are an senior telecom network operations engineer who writes "
                     "clear and professional incident reports."
                 ),
             },
