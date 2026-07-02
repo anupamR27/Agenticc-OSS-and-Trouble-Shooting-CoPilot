@@ -16,10 +16,7 @@ def convert_rca_row(row: dict[str, Any]) -> dict[str, Any]:
 
         "cell_id": row["cell_id/site_id"],
 
-        # Dataset doesn't have this yet
-        "cell_type": "Unknown",
-
-        "slice_type": row["network_slice"],
+        "network_slice": row["network_slice"],
 
         "sla_compliant": row["sla_compliant"],
 
@@ -29,7 +26,6 @@ def convert_rca_row(row: dict[str, Any]) -> dict[str, Any]:
 
         "confidence": row["confidence_score"],
 
-        # Keep these for future RAG / explanation
         "affected_kpis": row["affected_kpis"],
         "matched_signals": row["matched_signals"],
         "score_breakdown": row["score_breakdown"],

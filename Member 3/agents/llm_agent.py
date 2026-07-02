@@ -29,6 +29,7 @@ def generate_report(rca_result: dict, recommendations: list[str]) -> str:
     retrieval_query = f"""
     Root Cause: {rca_result["root_cause"]}
     Severity: {rca_result["severity"]}
+    Network Slice: {rca_result["network_slice"]}
     Affected KPIs: {rca_result["affected_kpis"]}
     RCA Explanation: {rca_result["explanation"]}
     """.strip()
@@ -63,6 +64,9 @@ Severity: {rca_result["severity"]}
 Root Cause: {rca_result["root_cause"]}
 Confidence: {rca_result["confidence"]:.0%}
 
+Network Slice: 
+{rca_result["network_slice"]}
+
 Affected KPIs:
 {rca_result["affected_kpis"]}
 
@@ -80,8 +84,14 @@ SUPPORTING TELECOM DOCUMENTATION
 INSTRUCTIONS
 ------------
 - Treat the RCA output as the identified incident.
-- Use the supporting telecom documentation as technical reference material.
-- Use the rule-based recommendations as immediate operator guidance.
+- Use the supporting telecom documentation as technical reference material. 
+    When the retrieved documentation contains deployment-specific guidance
+    (e.g., network slice), prefer those recommendations over
+    generic recommendations where appropriate.
+- Treat the rule-based recommendations as the minimum required actions. 
+    Augment them using relevant retrieved SOP guidance, especially network-slice-specific 
+    operational actions. Organize the final recommendations into Immediate Actions, 
+    Slice-Specific Actions (if applicable), and Long-Term Actions. Avoid repeating identical actions.
 - Do not invent troubleshooting procedures that are unsupported by the
   supporting documentation. The supplied rule-based recommendations remain
   valid immediate actions even when the documentation does not repeat them.
